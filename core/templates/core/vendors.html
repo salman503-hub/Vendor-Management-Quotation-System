@@ -1,0 +1,65 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Vendors - Teyzix Procure{% endblock %}
+{% block header_title %}Vendor Directory{% endblock %}
+
+{% block content %}
+<!-- Search and Add Controls -->
+<div class="action-header">
+    <div class="search-box">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="search-input" class="search-input" placeholder="Search vendors by name, company, or email...">
+    </div>
+    
+    <a href="{% url 'vendor_create' %}" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <span>Add New Vendor</span>
+    </a>
+</div>
+
+<!-- Vendors Grid -->
+{% if vendors %}
+<div class="cards-grid" id="vendors-container">
+    {% for vendor in vendors %}
+    <div class="card" data-filterable-card data-search-text="{{ vendor.name }} {{ vendor.company_name }} {{ vendor.email }}">
+        <div>
+            <div class="card-title">{{ vendor.company_name }}</div>
+            <div class="card-meta">Contact: <strong>{{ vendor.name }}</strong></div>
+            <div class="card-body">
+                <p style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 13px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    <span>{{ vendor.email }}</span>
+                </p>
+                <p style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 13px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    <span>{{ vendor.contact_number }}</span>
+                </p>
+                <p style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; margin-top: 12px; color: var(--text-secondary);">
+                    <svg style="margin-top: 3px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    <span style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        {{ vendor.business_address }}
+                    </span>
+                </p>
+            </div>
+        </div>
+        <div class="card-footer">
+            <span style="font-size: 11px; color: var(--text-muted);">Joined {{ vendor.created_at|date:"M Y" }}</span>
+            <a href="{% url 'vendor_detail' vendor.pk %}" class="btn btn-secondary btn-sm" style="font-size: 11px; padding: 4px 10px;">
+                View Profile &rarr;
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="panel" style="text-align: center; padding: 48px;">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted); margin-bottom: 16px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+    <h3 style="margin-bottom: 8px;">No Vendors Registered</h3>
+    <p style="color: var(--text-secondary); margin-bottom: 24px;">Add vendors to get started with creating quotation requests.</p>
+    <a href="{% url 'vendor_create' %}" class="btn btn-primary">Add Your First Vendor</a>
+</div>
+{% endif %}
+{% endblock %}

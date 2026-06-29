@@ -1,0 +1,134 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Compare Quotes - {{ request_detail.title }}{% endblock %}
+{% block header_title %}Proposal Comparison{% endblock %}
+
+{% block content %}
+<div class="panel">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
+        <div>
+            <span style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px;">Comparison Sheet for</span>
+            <h3 style="font-size: 22px; font-weight: 700; color: var(--text-primary);">{{ request_detail.title }}</h3>
+        </div>
+        <div style="display: flex; gap: 12px;" class="no-print">
+            <button id="export-pdf-btn" class="btn btn-secondary">
+                <!-- PDF / Print icon -->
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                <span>Export / Print Report</span>
+            </button>
+            <a href="{% url 'quotation_request_detail' request_detail.pk %}" class="btn btn-primary">
+                Back to Details
+            </a>
+        </div>
+    </div>
+    
+    <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 32px;">{{ request_detail.description }}</p>
+    
+    <!-- Stats Cards -->
+    <div class="compare-summary-cards" style="margin-bottom: 32px;">
+        <div style="background-color: var(--bg-surface-hover); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 20px; text-align: center;">
+            <span style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;">Total Bids</span>
+            <p style="font-size: 28px; font-weight: 800; color: var(--text-primary); margin-top: 4px;">{{ stats.total_quotes }}</p>
+        </div>
+        <div style="background-color: rgba(34, 197, 94, 0.05); border: 1px solid rgba(34, 197, 94, 0.2); border-radius: var(--border-radius-md); padding: 20px; text-align: center;">
+            <span style="font-size: 12px; color: #15803d; text-transform: uppercase; font-weight: 600;">Most Cost-Effective (Min)</span>
+            <p style="font-size: 28px; font-weight: 800; color: #10b981; margin-top: 4px;">
+                {% if stats.min_amount %}${{ stats.min_amount }}{% else %}$-{% endif %}
+            </p>
+        </div>
+        <div style="background-color: var(--bg-surface-hover); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 20px; text-align: center;">
+            <span style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;">Average Bid</span>
+            <p style="font-size: 28px; font-weight: 800; color: var(--text-primary); margin-top: 4px;">
+                {% if stats.avg_amount %}${{ stats.avg_amount|floatformat:2 }}{% else %}$-{% endif %}
+            </p>
+        </div>
+        <div style="background-color: var(--bg-surface-hover); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 20px; text-align: center;">
+            <span style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; font-weight: 600;">Highest Bid (Max)</span>
+            <p style="font-size: 28px; font-weight: 800; color: #ef4444; margin-top: 4px;">
+                {% if stats.max_amount %}${{ stats.max_amount }}{% else %}$-{% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Comparison Matrix Table -->
+    {% if quotes %}
+    <div class="compare-matrix-wrapper">
+        <table class="compare-matrix">
+            <thead>
+                <tr>
+                    <th style="width: 70px;">Rank</th>
+                    <th>Vendor Company</th>
+                    <th>Contact Person</th>
+                    <th>Quote Reference</th>
+                    <th>Quotation Amount</th>
+                    <th>Submission Date</th>
+                    <th>Status</th>
+                    <th class="no-print">Quick Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for quote in quotes %}
+                <tr class="{% if quote == lowest_quote %}best-deal{% endif %}">
+                    <td style="font-weight: 700;">
+                        {% if quote == lowest_quote %}
+                        <span style="color: #10b981;">#1</span>
+                        {% else %}
+                        #{{ forloop.counter }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'vendor_detail' quote.vendor.pk %}" style="font-weight: 700; color: var(--primary);">
+                            {{ quote.vendor.company_name }}
+                        </a>
+                        {% if quote == lowest_quote %}
+                        <span class="highlight-tag" style="margin-left: 8px;">
+                            <!-- Star svg -->
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <span>Most Cost-Effective</span>
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td style="font-weight: 500;">{{ quote.vendor.name }}</td>
+                    <td><code>{{ quote.vendor_reference }}</code></td>
+                    <td style="font-weight: 800; font-size: 16px; color: var(--text-primary);">${{ quote.amount }}</td>
+                    <td>{{ quote.submission_date|date:"d M Y" }}</td>
+                    <td>
+                        <span class="badge badge-{% if quote.status == 'Approved' %}approved{% elif quote.status == 'Rejected' %}rejected{% else %}pending{% endif %}">
+                            {{ quote.status }}
+                        </span>
+                    </td>
+                    <td class="no-print">
+                        <div style="display: flex; gap: 6px;">
+                            {% if quote.status != 'Approved' %}
+                            <form action="{% url 'quotation_status_update' quote.pk %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="Approved">
+                                <button type="submit" class="btn btn-secondary btn-sm" style="background-color: #dcfce7; color: #15803d; border-color: #bbf7d0;">
+                                    Approve
+                                </button>
+                            </form>
+                            {% endif %}
+                            
+                            {% if quote.status != 'Rejected' %}
+                            <form action="{% url 'quotation_status_update' quote.pk %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="Rejected">
+                                <button type="submit" class="btn btn-secondary btn-sm" style="background-color: #fee2e2; color: #b91c1c; border-color: #fca5a5;">
+                                    Reject
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="color: var(--text-secondary); text-align: center; padding: 40px 0;">
+        No quotes submitted for this request. Cannot build comparison matrix.
+    </p>
+    {% endif %}
+</div>
+{% endblock %}

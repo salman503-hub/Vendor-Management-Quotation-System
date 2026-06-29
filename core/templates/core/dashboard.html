@@ -1,0 +1,170 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Dashboard - Teyzix Procure{% endblock %}
+{% block header_title %}Procurement Dashboard{% endblock %}
+
+{% block content %}
+<!-- Metrics Grid -->
+<div class="metrics-grid">
+    <a href="{% url 'vendor_list' %}" class="metric-card">
+        <div class="metric-icon blue">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </div>
+        <div class="metric-data">
+            <h3>{{ total_vendors }}</h3>
+            <p>Total Vendors</p>
+        </div>
+    </a>
+
+    <a href="{% url 'quotation_request_list' %}" class="metric-card">
+        <div class="metric-icon purple">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+        </div>
+        <div class="metric-data">
+            <h3>{{ active_requests }}</h3>
+            <p>Active Requests</p>
+        </div>
+    </a>
+
+    <a href="{% url 'quotation_request_list' %}" class="metric-card">
+        <div class="metric-icon amber">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+        <div class="metric-data">
+            <h3>{{ pending_quotations }}</h3>
+            <p>Pending Quotes</p>
+        </div>
+    </a>
+
+    <a href="{% url 'quotation_request_list' %}" class="metric-card">
+        <div class="metric-icon green">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <div class="metric-data">
+            <h3>{{ approved_quotations }}</h3>
+            <p>Approved Quotes</p>
+        </div>
+    </a>
+</div>
+
+<!-- Main Dashboard Split Content -->
+<div class="dashboard-grid">
+    <!-- Left panel: Recent items -->
+    <div class="left-col">
+        <!-- Recent Requests -->
+        <div class="panel">
+            <div class="panel-header">
+                <h3>Recent Quotation Requests</h3>
+                <a href="{% url 'quotation_request_list' %}" class="btn-link">View All</a>
+            </div>
+            {% if latest_requests %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Submissions</th>
+                            <th class="no-print">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in latest_requests %}
+                        <tr>
+                            <td style="font-weight: 600;">{{ req.title }}</td>
+                            <td>
+                                <span class="badge badge-{% if req.status == 'Open' %}open{% else %}closed{% endif %}">
+                                    {{ req.status }}
+                                </span>
+                            </td>
+                            <td>{{ req.quotations.count }} quotes</td>
+                            <td class="no-print">
+                                <a href="{% url 'quotation_request_detail' req.pk %}" class="btn btn-secondary btn-sm">
+                                    Manage
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p style="color: var(--text-secondary); text-align: center; padding: 20px 0;">
+                No quotation requests created yet. <a href="{% url 'quotation_request_create' %}" class="btn-link">Create one now</a>.
+            </p>
+            {% endif %}
+        </div>
+
+        <!-- Recent Quotations Submitted -->
+        <div class="panel">
+            <div class="panel-header">
+                <h3>Recent Vendor Submissions</h3>
+                <a href="{% url 'quotation_request_list' %}" class="btn-link">View Requests</a>
+            </div>
+            {% if latest_quotes %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Vendor</th>
+                            <th>Quotation Request</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for quote in latest_quotes %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'vendor_detail' quote.vendor.pk %}" style="font-weight: 600; color: var(--primary);">
+                                    {{ quote.vendor.company_name }}
+                                </a>
+                            </td>
+                            <td>{{ quote.request.title }}</td>
+                            <td style="font-weight: 700; color: var(--text-primary);">${{ quote.amount }}</td>
+                            <td>
+                                <span class="badge badge-{% if quote.status == 'Approved' %}approved{% elif quote.status == 'Rejected' %}rejected{% else %}pending{% endif %}">
+                                    {{ quote.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p style="color: var(--text-secondary); text-align: center; padding: 20px 0;">
+                No vendor quotations submitted yet.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right panel: Activity Log -->
+    <div class="right-col">
+        <div class="panel">
+            <div class="panel-header">
+                <h3>Recent Activity Logs</h3>
+            </div>
+            {% if recent_activities %}
+            <ul class="activity-stream">
+                {% for log in recent_activities %}
+                <li class="activity-item">
+                    <div class="activity-bullet"></div>
+                    <div class="activity-content">
+                        <strong>{{ log.action }}</strong>
+                        <span class="activity-desc">{{ log.details }}</span>
+                        <span class="activity-time">{{ log.timestamp|timesince }} ago</span>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p style="color: var(--text-secondary); text-align: center; padding: 20px 0;">
+                No logs recorded.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

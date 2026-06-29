@@ -1,0 +1,158 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ request_detail.title }} - Details{% endblock %}
+{% block header_title %}Request details{% endblock %}
+
+{% block content %}
+<div class="detail-grid">
+    <!-- Left Column: Request Profile and Actions -->
+    <div class="left-col">
+        <div class="panel">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                <span class="badge badge-{% if request_detail.status == 'Open' %}open{% else %}closed{% endif %}">
+                    {{ request_detail.status }}
+                </span>
+                <span style="font-size: 12px; color: var(--text-muted);">Created {{ request_detail.created_at|date:"d M Y" }}</span>
+            </div>
+            
+            <h3 style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px;">{{ request_detail.title }}</h3>
+            <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 24px; white-space: pre-wrap;">{{ request_detail.description }}</p>
+            
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 20px;">
+            
+            <!-- Quick stats if there are quotes -->
+            {% if quotes %}
+            <div style="margin-bottom: 24px;">
+                <h4 style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Proposal Stats</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div style="background-color: var(--bg-surface-hover); padding: 12px; border-radius: var(--border-radius-sm);">
+                        <span style="font-size: 11px; color: var(--text-muted); display: block;">Lowest Bid</span>
+                        <strong style="font-size: 16px; color: #10b981;">${{ stats.min_amount }}</strong>
+                    </div>
+                    <div style="background-color: var(--bg-surface-hover); padding: 12px; border-radius: var(--border-radius-sm);">
+                        <span style="font-size: 11px; color: var(--text-muted); display: block;">Average Bid</span>
+                        <strong style="font-size: 16px; color: var(--text-primary);">${{ stats.avg_amount|floatformat:2 }}</strong>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                {% if request_detail.status == 'Open' %}
+                <a href="{% url 'quotation_create' %}?request_id={{ request_detail.pk }}" class="btn btn-primary" style="width: 100%;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <span>Submit Vendor Quote</span>
+                </a>
+                {% endif %}
+                
+                {% if quotes %}
+                <a href="{% url 'compare_quotations' request_detail.pk %}" class="btn btn-secondary" style="width: 100%; border-color: var(--primary); color: var(--primary);">
+                    <!-- Bar Chart icon -->
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    <span>Compare Bids side-by-side</span>
+                </a>
+                {% endif %}
+                
+                <a href="{% url 'quotation_request_update' request_detail.pk %}" class="btn btn-secondary" style="width: 100%;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    <span>Edit Request</span>
+                </a>
+                
+                <form action="{% url 'quotation_request_delete' request_detail.pk %}" method="post" class="confirm-delete-form" data-entity-name="request '{{ request_detail.title }}'">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" style="width: 100%;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        <span>Delete Request</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: List of submissions -->
+    <div class="right-col">
+        <div class="panel">
+            <div class="panel-header">
+                <h3>Vendor Proposals Submitted</h3>
+                <span style="font-size: 13px; color: var(--text-secondary);">{{ quotes.count }} proposals received</span>
+            </div>
+            
+            {% if quotes %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Vendor</th>
+                            <th>Reference</th>
+                            <th>Quotation Amount</th>
+                            <th>Submitted</th>
+                            <th>Status</th>
+                            <th class="no-print">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for quote in quotes %}
+                        <tr {% if quote == lowest_quote %}style="background-color: rgba(34, 197, 94, 0.03);"{% endif %}>
+                            <td>
+                                <a href="{% url 'vendor_detail' quote.vendor.pk %}" style="font-weight: 600; color: var(--primary);">
+                                    {{ quote.vendor.company_name }}
+                                </a>
+                                {% if quote == lowest_quote %}
+                                <span class="highlight-tag" style="font-size: 9px; padding: 2px 6px; margin-left: 6px; border-radius: 99px;">
+                                    Best Deal
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td><code>{{ quote.vendor_reference }}</code></td>
+                            <td style="font-weight: 700; color: var(--text-primary);">${{ quote.amount }}</td>
+                            <td>{{ quote.submission_date|date:"d M Y" }}</td>
+                            <td>
+                                <span class="badge badge-{% if quote.status == 'Approved' %}approved{% elif quote.status == 'Rejected' %}rejected{% else %}pending{% endif %}">
+                                    {{ quote.status }}
+                                </span>
+                            </td>
+                            <td class="no-print">
+                                <div style="display: flex; gap: 6px;">
+                                    {% if quote.status != 'Approved' %}
+                                    <form action="{% url 'quotation_status_update' quote.pk %}" method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="Approved">
+                                        <button type="submit" class="btn btn-secondary btn-sm" style="background-color: #dcfce7; color: #15803d; border-color: #bbf7d0;" title="Approve Proposal">
+                                            Approve
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                    
+                                    {% if quote.status != 'Rejected' %}
+                                    <form action="{% url 'quotation_status_update' quote.pk %}" method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="status" value="Rejected">
+                                        <button type="submit" class="btn btn-secondary btn-sm" style="background-color: #fee2e2; color: #b91c1c; border-color: #fca5a5;" title="Reject Proposal">
+                                            Reject
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 48px 0; color: var(--text-secondary);">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted); margin-bottom: 12px;"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <p style="font-weight: 500; font-size: 15px; margin-bottom: 8px;">No Proposals Received Yet</p>
+                <p style="font-size: 13px; max-width: 320px; margin: 0 auto 20px;">We are waiting for vendor submissions. You can also submit one manually on behalf of a vendor.</p>
+                {% if request_detail.status == 'Open' %}
+                <a href="{% url 'quotation_create' %}?request_id={{ request_detail.pk }}" class="btn btn-primary btn-sm">
+                    Submit Vendor Proposal
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

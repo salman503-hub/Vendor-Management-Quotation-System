@@ -1,0 +1,68 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Requests - Teyzix Procure{% endblock %}
+{% block header_title %}Quotation Requests{% endblock %}
+
+{% block content %}
+<!-- Search and Filter Panel -->
+<div class="action-header">
+    <div class="search-box">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="search-input" class="search-input" placeholder="Search requests by title or description...">
+    </div>
+    
+    <div class="filters-group">
+        <select id="status-filter" class="filter-select">
+            <option value="all">All Statuses</option>
+            <option value="Open">Open</option>
+            <option value="Closed">Closed</option>
+        </select>
+        
+        <a href="{% url 'quotation_request_create' %}" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Create Request</span>
+        </a>
+    </div>
+</div>
+
+<!-- Requests Cards Grid -->
+{% if requests %}
+<div class="cards-grid">
+    {% for req in requests %}
+    <div class="card" data-filterable-card data-search-text="{{ req.title }} {{ req.description }}" data-status-val="{{ req.status }}">
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 8px;">
+                <h3 class="card-title" style="margin-bottom: 0;">{{ req.title }}</h3>
+                <span class="badge badge-{% if req.status == 'Open' %}open{% else %}closed{% endif %}">
+                    {{ req.status }}
+                </span>
+            </div>
+            
+            <p class="card-body" style="font-size: 13.5px; line-height: 1.5; color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 16px;">
+                {{ req.description }}
+            </p>
+        </div>
+        
+        <div class="card-footer" style="padding-top: 12px;">
+            <span style="font-size: 12px; color: var(--text-secondary); font-weight: 500;">
+                <strong>{{ req.quotations.count }}</strong> bids submitted
+            </span>
+            <a href="{% url 'quotation_request_detail' req.pk %}" class="btn btn-secondary btn-sm" style="font-size: 12px; padding: 6px 12px;">
+                View Quotes &rarr;
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="panel" style="text-align: center; padding: 48px;">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted); margin-bottom: 16px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+    <h3 style="margin-bottom: 8px;">No Quotation Requests Created</h3>
+    <p style="color: var(--text-secondary); margin-bottom: 24px;">Create requests to solicit proposal responses from your registered vendors.</p>
+    <a href="{% url 'quotation_request_create' %}" class="btn btn-primary">Create Your First Request</a>
+</div>
+{% endif %}
+{% endblock %}
