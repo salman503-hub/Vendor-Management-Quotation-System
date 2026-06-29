@@ -1,7 +1,7 @@
 @echo off
-title Vendor Management ^& Quotation System
+title Vendor Management ^& Quotation System (Full-Stack React)
 echo =======================================================================
-echo          Teyzix Vendor Management ^& Quotation System Setup ^& Run
+echo     Teyzix Vendor Management ^& Quotation System (React) Setup ^& Run
 echo =======================================================================
 echo.
 
@@ -14,8 +14,26 @@ if %errorlevel% neq 0 (
     exit /b
 )
 
-echo [INFO] Installing required dependencies...
+:: Check Node installation
+node -v >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [ERROR] Node.js is not installed. React frontend cannot be built.
+    echo Please install Node.js (which includes npm) and try again.
+    pause
+    exit /b
+)
+
+echo [INFO] Installing Python dependencies...
 python -m pip install -r requirements.txt
+
+echo.
+echo [INFO] Installing frontend NPM dependencies (React/Vite)...
+cd frontend
+call npm install
+echo.
+echo [INFO] Compiling React frontend...
+call node node_modules/vite/bin/vite.js build
+cd ..
 
 echo.
 echo [INFO] Applying database migrations...

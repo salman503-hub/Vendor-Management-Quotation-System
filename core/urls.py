@@ -1,34 +1,21 @@
-from django.urls import path
+from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
-    # Authentication
-    path('login/', views.login_view, name='login'),
-    path('register/', views.register_view, name='register'),
-    path('logout/', views.logout_view, name='logout'),
+    # REST API Routes
+    path('api/me/', views.api_me, name='api_me'),
+    path('api/register/', views.api_register, name='api_register'),
+    path('api/login/', views.api_login, name='api_login'),
+    path('api/logout/', views.api_logout, name='api_logout'),
+    path('api/dashboard/', views.api_dashboard, name='api_dashboard'),
+    path('api/vendors/', views.api_vendors, name='api_vendors'),
+    path('api/vendors/<int:pk>/', views.api_vendor_detail, name='api_vendor_detail'),
+    path('api/requests/', views.api_requests, name='api_requests'),
+    path('api/requests/<int:pk>/', views.api_request_detail, name='api_request_detail'),
+    path('api/quotations/', views.api_quotations, name='api_quotations'),
+    path('api/quotations/<int:pk>/status/', views.api_quotation_status, name='api_quotation_status'),
+    path('api/requests/<int:request_pk>/compare/', views.api_compare, name='api_compare'),
 
-    # Dashboard
-    path('', views.dashboard_view, name='dashboard'),
-    path('dashboard/', views.dashboard_view, name='dashboard'),
-
-    # Vendors
-    path('vendors/', views.vendor_list_view, name='vendor_list'),
-    path('vendors/add/', views.vendor_create_view, name='vendor_create'),
-    path('vendors/<int:pk>/', views.vendor_detail_view, name='vendor_detail'),
-    path('vendors/<int:pk>/edit/', views.vendor_update_view, name='vendor_update'),
-    path('vendors/<int:pk>/delete/', views.vendor_delete_view, name='vendor_delete'),
-
-    # Quotation Requests
-    path('requests/', views.quotation_request_list_view, name='quotation_request_list'),
-    path('requests/create/', views.quotation_request_create_view, name='quotation_request_create'),
-    path('requests/<int:pk>/', views.quotation_request_detail_view, name='quotation_request_detail'),
-    path('requests/<int:pk>/edit/', views.quotation_request_update_view, name='quotation_request_update'),
-    path('requests/<int:pk>/delete/', views.quotation_request_delete_view, name='quotation_request_delete'),
-
-    # Quotations (Responses/Proposals)
-    path('quotations/submit/', views.quotation_create_view, name='quotation_create'),
-    path('quotations/<int:pk>/status/', views.quotation_status_update_view, name='quotation_status_update'),
-
-    # Comparison
-    path('requests/<int:request_pk>/compare/', views.compare_view, name='compare_quotations'),
+    # SPA Fallback - Any other route is handled by React frontend
+    re_path(r'^.*$', views.index_view, name='index'),
 ]

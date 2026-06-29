@@ -96,14 +96,35 @@ class ViewAuthenticationTests(TestCase):
         self.client = Client()
         self.user = User.objects.create_user(username='testadmin', password='testpassword123')
 
-    def test_dashboard_redirects_for_anonymous_user(self):
-        response = self.client.get(reverse('dashboard'))
-        self.assertEqual(response.status_code, 302)
-        self.assertIn(reverse('login'), response.url)
-
-    def test_dashboard_accessible_for_logged_in_user(self):
-        self.client.login(username='testadmin', password='testpassword123')
-        response = self.client.get(reverse('dashboard'))
+    def test_api_me_for_anonymous_user(self):
+        response = self.client.get(reverse('api_me'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'core/dashboard.html')
+        self.assertJSONEqual(response.content, {'authenticated': False})
+
+    def test_api_me_for_logged_in_user(self):
+        self.client.login(username='testadmin', password='testpassword123')
+        response = self.client.get(reverse('api_me'))
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {
+            'authenticated': True,
+            'user': {
+                'username': 'testadmin',
+                'email': ''
+            }
+        })
+
+    def test_api_dashboard_redirects_for_anonymous_user(self):
+        response = self.client.get(reverse('api_dashboard'))
+        # login_required decorator redirects to /login
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/login', response.url)
+
+    def test_api_dashboard_accessible_for_logged_in_user(self):
+        self.client.login(username='testadmin', password='testpassword123')
+        response = self.client.get(reverse('api_dashboard'))
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn('total_vendors', data)
+        self.assertIn('active_requests', data)
+
 
