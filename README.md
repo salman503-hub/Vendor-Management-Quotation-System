@@ -175,3 +175,8 @@ The database seeder automatically creates an administrator account:
 - **Email**: `admin@teyzix.com`
 
 *Note: You can also register a new account on the application startup registration page.*
+
+---
+
+## 🔗 LinkedIn Post & Demo
+- **LinkedIn Link**: [Muhammad Suleman - Teyzix Core Fullstack Development Task](https://www.linkedin.com/posts/muhammad-suleman-9ab191373_teyzixcore-internship-fullstackdevelopment-ugcPost-7477434980860698625-1V8I)

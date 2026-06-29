@@ -52,4 +52,9 @@ METHOD B: Manual Launch (Command Line)
    python manage.py runserver
 6. Open browser and visit:
    http://127.0.0.1:8000/
+
+5. LINKEDIN POST / DEMO LINK
+----------------------------
+Aap niche diye gaye link par click kar ke demo ya post dekh sakte hain:
+https://www.linkedin.com/posts/muhammad-suleman-9ab191373_teyzixcore-internship-fullstackdevelopment-ugcPost-7477434980860698625-1V8I
 =======================================================================
