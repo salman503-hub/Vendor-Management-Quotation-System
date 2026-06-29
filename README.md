@@ -1,6 +1,7 @@
 # Vendor Management & Quotation System
 ### Teyzix Core Internship Program - Task ID: FS-2
 ### Domain: Full-Stack Web Development
+### Reference ID: TC-INT-18991230-761
 
 A premium, full-stack web-based **Vendor Management & Quotation System** built using Python, Django, SQLite, and custom Vanilla CSS/JS. The application allows organizations to manage vendor directories, request quotation proposals, track vendor bids, compare quotes side-by-side, highlight the most cost-effective bids, and export reports to PDF.
 
